@@ -6,6 +6,7 @@ ARTIFACTS_DIR: str = "artifacts"
 RAW_DATA_DIR: str = "HousePrice_data"
 TRAIN_FILE_PATH: str = "train.csv"
 TEST_FILE_PATH: str = "test.csv"
+SCHEMA_DIR: str = "data_schema"
 
 
 # Paths to raw data

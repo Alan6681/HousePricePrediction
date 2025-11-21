@@ -7,4 +7,5 @@ seaborn
 requests
 flask
 python-dotenv
--e .
+pyaml
+# -e .

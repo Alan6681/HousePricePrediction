@@ -1,0 +1,163 @@
+categorical:
+- MSZoning
+- Street
+- Alley
+- LotShape
+- LandContour
+- Utilities
+- LotConfig
+- LandSlope
+- Neighborhood
+- Condition1
+- Condition2
+- BldgType
+- HouseStyle
+- RoofStyle
+- RoofMatl
+- Exterior1st
+- Exterior2nd
+- MasVnrType
+- ExterQual
+- ExterCond
+- Foundation
+- BsmtQual
+- BsmtCond
+- BsmtExposure
+- BsmtFinType1
+- BsmtFinType2
+- Heating
+- HeatingQC
+- CentralAir
+- Electrical
+- KitchenQual
+- Functional
+- FireplaceQu
+- GarageType
+- GarageFinish
+- GarageQual
+- GarageCond
+- PavedDrive
+- PoolQC
+- Fence
+- MiscFeature
+- SaleType
+- SaleCondition
+columns:
+  1stFlrSF: int64
+  2ndFlrSF: int64
+  3SsnPorch: int64
+  Alley: categorical
+  BedroomAbvGr: int64
+  BldgType: categorical
+  BsmtCond: categorical
+  BsmtExposure: categorical
+  BsmtFinSF1: int64
+  BsmtFinSF2: int64
+  BsmtFinType1: categorical
+  BsmtFinType2: categorical
+  BsmtFullBath: int64
+  BsmtHalfBath: int64
+  BsmtQual: categorical
+  BsmtUnfSF: int64
+  CentralAir: categorical
+  Condition1: categorical
+  Condition2: categorical
+  Electrical: categorical
+  EnclosedPorch: int64
+  ExterCond: categorical
+  ExterQual: categorical
+  Exterior1st: categorical
+  Exterior2nd: categorical
+  Fence: categorical
+  FireplaceQu: categorical
+  Fireplaces: int64
+  Foundation: categorical
+  FullBath: int64
+  Functional: categorical
+  GarageArea: int64
+  GarageCars: int64
+  GarageCond: categorical
+  GarageFinish: categorical
+  GarageQual: categorical
+  GarageType: categorical
+  GarageYrBlt: float64
+  GrLivArea: int64
+  HalfBath: int64
+  Heating: categorical
+  HeatingQC: categorical
+  HouseStyle: categorical
+  KitchenAbvGr: int64
+  KitchenQual: categorical
+  LandContour: categorical
+  LandSlope: categorical
+  LotArea: int64
+  LotConfig: categorical
+  LotFrontage: float64
+  LotShape: categorical
+  LowQualFinSF: int64
+  MSSubClass: int64
+  MSZoning: categorical
+  MasVnrArea: float64
+  MasVnrType: categorical
+  MiscFeature: categorical
+  MiscVal: int64
+  MoSold: int64
+  Neighborhood: categorical
+  OpenPorchSF: int64
+  OverallCond: int64
+  OverallQual: int64
+  PavedDrive: categorical
+  PoolArea: int64
+  PoolQC: categorical
+  RoofMatl: categorical
+  RoofStyle: categorical
+  SaleCondition: categorical
+  SalePrice: int64
+  SaleType: categorical
+  ScreenPorch: int64
+  Street: categorical
+  TotRmsAbvGrd: int64
+  TotalBsmtSF: int64
+  Utilities: categorical
+  WoodDeckSF: int64
+  YearBuilt: int64
+  YearRemodAdd: int64
+  YrSold: int64
+numerical:
+- MSSubClass
+- LotFrontage
+- LotArea
+- OverallQual
+- OverallCond
+- YearBuilt
+- YearRemodAdd
+- MasVnrArea
+- BsmtFinSF1
+- BsmtFinSF2
+- BsmtUnfSF
+- TotalBsmtSF
+- 1stFlrSF
+- 2ndFlrSF
+- LowQualFinSF
+- GrLivArea
+- BsmtFullBath
+- BsmtHalfBath
+- FullBath
+- HalfBath
+- BedroomAbvGr
+- KitchenAbvGr
+- TotRmsAbvGrd
+- Fireplaces
+- GarageYrBlt
+- GarageCars
+- GarageArea
+- WoodDeckSF
+- OpenPorchSF
+- EnclosedPorch
+- 3SsnPorch
+- ScreenPorch
+- PoolArea
+- MiscVal
+- MoSold
+- YrSold
+- SalePrice
