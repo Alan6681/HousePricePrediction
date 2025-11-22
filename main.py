@@ -1,18 +1,21 @@
 from housepriceprediction.components.data_ingestion import DataIngestion
 from housepriceprediction.components.data_validation import DataValidation
 from housepriceprediction.components.data_transformation import DataTransformation
+from housepriceprediction.components.model_trainer import ModelTrainer
 
 from housepriceprediction.entity.config_entity import (
     TrainingPipelineConfig,
     DataIngestionConfig,
     DataValidationConfig,
     DataTransformationConfig,
+    ModelTrainerConfig
 )
 
 from housepriceprediction.entity.artifacts_entity import (
     DataIngestionArtifact,
     DataValidationArtifact,
     DataTransformationArtifact,
+    ModelTrainerArtifact
 )
 
 from housepriceprediction.exception.exception import HousePricePredictionException
@@ -68,12 +71,27 @@ def run_training_pipeline():
         transformation_artifact = transformation.initiate_data_transformation()
         logging.info("Data Transformation Completed")
 
-        print("Training Pipeline Finished Successfully!")
+        # -----------------------------------------
+        # STEP 5 — MODEL_TRAINER
+        # -----------------------------------------
+
+        model_trainer_config = ModelTrainerConfig(training_pipeline_config=pipeline_config)
+        model_trainer = ModelTrainer(model_trainer_config=model_trainer_config,data_transformation_artifact=transformation_artifact)
+        model_trainer_artifact = model_trainer.initiate_model_trainer()
+        logging.info("Model_Trainer completed")
+
+        print("Training pipeline completed")
+
+
+
         return {
             "ingestion": ingestion_artifact,
             "validation": validation_artifact,
-            "transformation": transformation_artifact
+            "transformation": transformation_artifact,
+            "model_trainer" : model_trainer_artifact
         }
+
+
 
     except Exception as e:
         raise HousePricePredictionException(e, sys)
