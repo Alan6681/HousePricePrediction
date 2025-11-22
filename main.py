@@ -36,7 +36,7 @@ def data_validation_training_pipeline():
 
         data_ingestion_artifact = data_ingestion.initiate_ingestion()
 
-        data_validation_config = DataValidationConfig(data_ingestion_config= data_ingestion_config)
+        data_validation_config = DataValidationConfig(training_pipeline_config=TrainingPipelineConfig(), data_ingestion_config= data_ingestion_config)
         data_validation = DataValidation(data_ingestion_artifact, data_validation_config)
 
         data_validation_artifact = data_validation.initiate_data_validation()
