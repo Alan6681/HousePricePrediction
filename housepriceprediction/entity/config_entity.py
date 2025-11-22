@@ -68,7 +68,6 @@ class DataValidationConfig:
             file_paths.DATA_VALIDATION_DRIFT_REPORT_FILE_NAME
          )
 
-
         # 5. Set the schema file path 
         self.schema_file_path = os.path.join(SCHEMA_DIR, "schema.yaml")
 
@@ -76,6 +75,15 @@ class DataValidationConfig:
         self.train_file_path = data_ingestion_config.ingested_train_file_path
         self.test_file_path = data_ingestion_config.ingested_test_file_path
 
-# class DataTranformationConfig:
-#     def __init__(self, training_pipeline_config: TrainingPipelineConfig):
-#         self.data_transformation_dir = os.path.join(training_pipeline_config.artifact_dir )
+class DataTransformationConfig:
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+        self.data_transformation_dir: str = os.path.join(training_pipeline_config.artifact_dir, file_paths.DATA_TRANSFORMATION_DIR_NAME)
+
+        self.transformed_train_file_path: str = os.path.join(self.data_transformation_dir, file_paths.DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
+        file_paths.TRAIN_FILE_PATH.replace("csv", "npy"))
+
+        self.transformed_test_file_path: str = os.path.join(self.data_transformation_dir, file_paths.DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
+        file_paths.TEST_FILE_PATH.replace("csv", "npy"))
+
+        self.transformed_object_file_path: str = os.path.join(self.data_transformation_dir, file_paths.DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
+        file_paths.PREPROCESSING_OBJECT_FILE_NAME)

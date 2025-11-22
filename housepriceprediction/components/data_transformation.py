@@ -1,144 +1,134 @@
-from housepriceprediction.components.data_ingestion import DataIngestion
-from housepriceprediction.entity.config_entity import DataValidationConfig
-from housepriceprediction.entity.artifacts_entity import DataIngestionArtifact, DataValidationArtifact
 from housepriceprediction.exception.exception import HousePricePredictionException
 from housepriceprediction.logging.logger import logging
-import pandas as pd
-from housepriceprediction.utils.main_utils.utils import read_yaml_file, write_yaml_file
-from scipy.stats import ks_2samp
+from housepriceprediction.constants.training_pipeline.constants import *
+from housepriceprediction.constants.file_paths import *
+from housepriceprediction.entity.config_entity import DataTransformationConfig, DataValidationConfig
+from housepriceprediction.utils.main_utils.utils import read_yaml_file, save_numpy_array_data, save_object
+from housepriceprediction.entity.artifacts_entity import DataValidationArtifact, DataTransformationArtifact
 
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import KNNImputer
+from sklearn.preprocessing import OneHotEncoder
+
+import numpy as np
+import pandas as pd
 import os
 import sys
 
-class DataValidation:
-    def __init__(self, data_ingestion_artifact:DataIngestionArtifact, data_validation_config:DataValidationConfig):
-        self.data_ingestion_artifact = data_ingestion_artifact
-        self.data_validation_config = data_validation_config
-        self.schema_config = read_yaml_file(self.data_validation_config.schema_file_path)
 
-    def read_data(self, file_path:str) -> pd.DataFrame:
-        """Reads a CSV file into a pandas DataFrame"""
+class DataTransformation:
+    def __init__(self, data_validation_config: DataValidationConfig, 
+                 data_validation_artifact: DataValidationArtifact, 
+                 data_transformation_config: DataTransformationConfig):
+        try:
+            self.data_validation_config = data_validation_config
+            self.data_validation_artifact = data_validation_artifact
+            self.data_transformation_config = data_transformation_config
+            self.schema_config = read_yaml_file(self.data_validation_config.schema_file_path)
+        except Exception as e:
+            raise HousePricePredictionException(e, sys)
+
+    @staticmethod
+    def read_data(file_path) -> pd.DataFrame:
         try:
             return pd.read_csv(file_path)
         except Exception as e:
-            raise HousePricePredictionException(e,sys)
-        
+            raise HousePricePredictionException(e, sys)
 
-    def validate_number_of_columns(self, dataframe:pd.DataFrame) -> bool:
-        """Validates if the DataFrame has the expected number of columns"""
+    def get_column_type(self, col_type: str):
         try:
-            dataframe_columns = dataframe.shape[1]
-            required_columns = len(self.schema_config["schema"]["columns"])
-
-            logging.info(f"Required number of columns: {required_columns}")
-            logging.info(f"DataFrame has columns: {dataframe_columns}")
-
-            return dataframe_columns == required_columns
-        except Exception as e:
-            raise HousePricePredictionException(e,sys)
-        
-    def required_columns(self, dataframe:pd.DataFrame) -> bool:
-        """Validates if the DataFrame contains all required columns"""
-        try:
-            required_columns = list(self.schema_config["schema"]["columns"].keys())
-            dataframe_columns = dataframe.columns
-            missing_columns = [col for col in required_columns if col not in dataframe_columns]
-
-            if missing_columns:
-                logging.info(f"Missing columns in: {missing_columns}")
-                return False
-            return True
-            
-        except Exception as e:
-            raise HousePricePredictionException(e,sys)
-        
-    def detect_data_drift(self, base_df:pd.DataFrame, current_df:pd.DataFrame, threshold=0.05) -> bool:
-        """Checks for Datadrift between training set and test sets"""
-        try:
-            check = True
-            report = {}
-
-            for column in base_df.columns:
-                d1 = base_df[column]
-                d2 = current_df[column]
-
-                test_result = ks_2samp(d1, d2)
-                p_value = float(test_result.pvalue)
-                drift_found = p_value < threshold
-
-                report[column] = {
-                    "p_value" : p_value,
-                    "drift_found" : drift_found
-                }
-
-                if drift_found:
-                    check = False
-
-
-            drift_report_file_path = self.data_validation_config.drift_report_file_path
-            os.makedirs(os.path.dirname(drift_report_file_path), exist_ok=True)
-
-            write_yaml_file(file_path=drift_report_file_path, content=report)
-            return check
+            if col_type == "categorical":
+                return list(self.schema_config["categorical"])
+            elif col_type == "numerical":
+                return list(self.schema_config["numerical"])
+            else:
+                raise ValueError("col_type must be 'categorical' or 'numerical'")
         except Exception as e:
             raise HousePricePredictionException(e, sys)
-    
-    def initiate_data_validation(self) -> DataValidationArtifact:
-        """Main pipeline entry: validate schema, columns, and drift."""
+
+    def get_data_transformed_object(self, input_df: pd.DataFrame) -> ColumnTransformer:
+        """Creates a ColumnTransformer safely using only existing columns"""
         try:
-            train_file_path = self.data_ingestion_artifact.train_file_path
-            test_file_path = self.data_ingestion_artifact.test_file_path
+            logging.info("Creating data transformation object (ColumnTransformer)")
 
-            train_df = self.read_data(train_file_path)
-            test_df = self.read_data(test_file_path)
+            numerical_columns = [col for col in self.get_column_type("numerical") if col in input_df.columns]
+            categorical_columns = [col for col in self.get_column_type("categorical") if col in input_df.columns]
 
-            # Validate number of columns
-            if not self.validate_number_of_columns(train_df):
-                raise Exception("The number of columns in train_df does not match training data")
-            if not self.validate_number_of_columns(test_df):
-                raise Exception("The number of columns in test_df does not match test data")
+            logging.info(f"Numerical columns: {numerical_columns}")
+            logging.info(f"Categorical columns: {categorical_columns}")
 
+            num_pipeline = Pipeline([
+                ('imputer', KNNImputer(**DATA_TRANSFORMED_IMPUTER_PARAMS))
+            ])
 
-            # Validate required columns
-            if not self.required_columns(train_df):
-                raise Exception ("Required columns are missing in train_df")
-            if not self.required_columns(test_df):
-                raise Exception ("Required columns are missing in test_df")
-            
-            # Detect DataDrift
-            validation_status = self.detect_data_drift(base_df=train_df, current_df=test_df)
-            if not validation_status:
-                logging.info("Data drift detected between train and test datasets")
-            
+            cat_pipeline = Pipeline([
+                ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+            ])
 
-            # Save valid datasets
-            os.makedirs(os.path.dirname(self.data_validation_config.valid_train_path), exist_ok=True)
-            train_df.to_csv(self.data_validation_config.valid_train_path, index=False)
-            test_df.to_csv(self.data_validation_config.valid_test_path, index=False)
-
-
-            # Prepare Artifact
-            data_validation_artifact = DataValidationArtifact(
-                
-                valid_train_df= self.data_validation_config.valid_train_path,
-                valid_test_df= self.data_validation_config.valid_test_path,
-                invalid_train_df= self.data_validation_config.invalid_train_path,
-                invalid_test_df= self.data_validation_config.invalid_test_path,
-                drift_report_file_path= self.data_validation_config.drift_report_file_path,
-                validation_status=validation_status
-                
-
+            preprocessor = ColumnTransformer(
+                transformers=[
+                    ('numerical', num_pipeline, numerical_columns),
+                    ('categorical', cat_pipeline, categorical_columns)
+                ],
+                remainder='drop'  # drop any columns not specified in schema
             )
 
-            logging.info(f"Data Validation Completed Successfully {data_validation_artifact}")
-            return data_validation_artifact
-
+            logging.info("ColumnTransformer created successfully")
+            return preprocessor
 
         except Exception as e:
             raise HousePricePredictionException(e, sys)
 
+    def initiate_data_transformation(self) -> DataTransformationArtifact:
+        try:
+            logging.info("Starting data transformation process")
 
-    
+            # Read validated train and test datasets
+            train_df = self.read_data(self.data_validation_artifact.valid_train_df)
+            test_df = self.read_data(self.data_validation_artifact.valid_test_df)
+            logging.info(f"Train shape: {train_df.shape}, Test shape: {test_df.shape}")
 
+            # Split features and target
+            input_feature_train_df = train_df.drop(columns=TARGET_COLUMN, axis=1)
+            target_feature_train_df = train_df[TARGET_COLUMN]
 
-    
+            input_feature_test_df = test_df.drop(columns=TARGET_COLUMN, axis=1)
+            target_feature_test_df = test_df[TARGET_COLUMN]
+
+            # Create ColumnTransformer
+            preprocessor = self.get_data_transformed_object(input_feature_train_df)
+
+            # Apply transformations
+            transformed_train_input_feature = preprocessor.fit_transform(input_feature_train_df)
+            transformed_test_input_feature = preprocessor.transform(input_feature_test_df)
+
+            logging.info(f"Transformed train shape: {transformed_train_input_feature.shape}")
+            logging.info(f"Transformed test shape: {transformed_test_input_feature.shape}")
+
+            # Ensure target arrays are 2D for concatenation
+            target_train_array = np.array(target_feature_train_df).reshape(-1, 1)
+            target_test_array = np.array(target_feature_test_df).reshape(-1, 1)
+
+            # Combine features and target
+            train_arr = np.c_[transformed_train_input_feature, target_train_array]
+            test_arr = np.c_[transformed_test_input_feature, target_test_array]
+
+            logging.info("Combined features and target into final arrays")
+
+            # Save transformed arrays and preprocessor object
+            save_numpy_array_data(file_path=self.data_transformation_config.transformed_train_file_path, array=train_arr)
+            save_numpy_array_data(file_path=self.data_transformation_config.transformed_test_file_path, array=test_arr)
+            save_object(file_path=self.data_transformation_config.transformed_object_file_path, obj=preprocessor)
+            save_object("final_models/preprocessor.pkl", preprocessor)
+
+            logging.info("Saved transformed arrays and preprocessor object successfully")
+
+            return DataTransformationArtifact(
+                transformed_train_file_path=self.data_transformation_config.transformed_train_file_path,
+                transformed_test_file_path=self.data_transformation_config.transformed_test_file_path,
+                preprocessed_object_file_path=self.data_transformation_config.transformed_object_file_path
+            )
+
+        except Exception as e:
+            raise HousePricePredictionException(e, sys)

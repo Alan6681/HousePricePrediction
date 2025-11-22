@@ -43,6 +43,16 @@ PREPROCESSING_OBJECT_FILE_NAME: str = "preprocessing_object.pkl"
 Data Transformation related constant start with DATA_Transformation VAR NAME
 
 """
+
+DATA_TRANSFORMATION_DIR_NAME: str = "data_transformation"
+DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR:str = "transformed"
+DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR:str = "transformed_object"
+
+#KNN imputer to replace nan values
+DATA_TRANSFORMED_IMPUTER_PARAMS = {
+    "n_neighbors": 3,
+    "weights": "uniform"
+}
  
 
 

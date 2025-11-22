@@ -1,58 +1,83 @@
 from housepriceprediction.components.data_ingestion import DataIngestion
-from housepriceprediction.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig, DataValidationConfig
-from housepriceprediction.logging.logger import logging
-from housepriceprediction.exception.exception import HousePricePredictionException
-import sys
-import pandas as pd
-
-
 from housepriceprediction.components.data_validation import DataValidation
-from housepriceprediction.entity.artifacts_entity import DataIngestionArtifact, DataValidationArtifact
+from housepriceprediction.components.data_transformation import DataTransformation
+
+from housepriceprediction.entity.config_entity import (
+    TrainingPipelineConfig,
+    DataIngestionConfig,
+    DataValidationConfig,
+    DataTransformationConfig,
+)
+
+from housepriceprediction.entity.artifacts_entity import (
+    DataIngestionArtifact,
+    DataValidationArtifact,
+    DataTransformationArtifact,
+)
+
+from housepriceprediction.exception.exception import HousePricePredictionException
 from housepriceprediction.logging.logger import logging
+import sys
 
 
+def run_training_pipeline():
 
-def data_ingestion_training_pipeline():
     try:
-        training_pipeline_config = TrainingPipelineConfig()
-        data_ingestion_config = DataIngestionConfig(training_pipeline_config)
-        data_ingestion = DataIngestion(data_ingestion_config)
+        # -----------------------------------------
+        # STEP 1 — TRAINING PIPELINE CONFIG
+        # -----------------------------------------
+        pipeline_config = TrainingPipelineConfig()
+        logging.info("Training Pipeline Config Loaded")
 
-        artifact = data_ingestion.initiate_ingestion()
+        # -----------------------------------------
+        # STEP 2 — DATA INGESTION
+        # -----------------------------------------
+        ingestion_config = DataIngestionConfig(pipeline_config)
+        ingestion = DataIngestion(ingestion_config)
 
-        
-        print("Feature Store Path:", artifact.feature_store_file_path)
-        print("Train File Path:", artifact.train_file_path)
-        print("Test File Path:", artifact.test_file_path)
-        print("SUCCESS: Data ingestion completed!")
+        ingestion_artifact = ingestion.initiate_ingestion()
+        logging.info("Data Ingestion Completed")
+
+        # -----------------------------------------
+        # STEP 3 — DATA VALIDATION
+        # -----------------------------------------
+        validation_config = DataValidationConfig(
+            training_pipeline_config=pipeline_config,
+            data_ingestion_config=ingestion_config
+        )
+
+        validation = DataValidation(
+            data_ingestion_artifact=ingestion_artifact,
+            data_validation_config=validation_config
+        )
+
+        validation_artifact = validation.initiate_data_validation()
+        logging.info("Data Validation Completed")
+
+        # -----------------------------------------
+        # STEP 4 — DATA TRANSFORMATION
+        # -----------------------------------------
+        transformation_config = DataTransformationConfig(pipeline_config)
+
+        transformation = DataTransformation(
+            data_validation_config=validation_config,
+            data_validation_artifact=validation_artifact,
+            data_transformation_config=transformation_config
+        )
+
+        transformation_artifact = transformation.initiate_data_transformation()
+        logging.info("Data Transformation Completed")
+
+        print("Training Pipeline Finished Successfully!")
+        return {
+            "ingestion": ingestion_artifact,
+            "validation": validation_artifact,
+            "transformation": transformation_artifact
+        }
+
     except Exception as e:
         raise HousePricePredictionException(e, sys)
 
-def data_validation_training_pipeline():
-    try:
-        training_pipeline_config = TrainingPipelineConfig()
-        data_ingestion_config = DataIngestionConfig(training_pipeline_config)
-        data_ingestion = DataIngestion(data_ingestion_config)
-
-        data_ingestion_artifact = data_ingestion.initiate_ingestion()
-
-        data_validation_config = DataValidationConfig(training_pipeline_config=TrainingPipelineConfig(), data_ingestion_config= data_ingestion_config)
-        data_validation = DataValidation(data_ingestion_artifact, data_validation_config)
-
-        data_validation_artifact = data_validation.initiate_data_validation()
-
-        logging.info("Data Validation completed!")
-        print("Valid Train File Path:", data_validation_config.valid_train_path)
-        print("Valid Test File Path:", data_validation_config.valid_test_path)
-        print("Drift Report File Path:", data_validation_config.drift_report_file_path)
-
-    except Exception as e:
-        raise HousePricePredictionException(e, sys)
-    
-    
 
 if __name__ == "__main__":
-
-    data_ingestion_training_pipeline()
-    data_validation_training_pipeline()
-    
+    run_training_pipeline()

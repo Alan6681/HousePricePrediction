@@ -15,6 +15,14 @@ class DataValidationArtifact:
         self.drift_report_file_path = drift_report_file_path
         self.validation_status = validation_status
 
+class DataTransformationArtifact:
+    def __init__(self, transformed_train_file_path:str, transformed_test_file_path:str, preprocessed_object_file_path:str):
+        self.transformed_train_file_path = transformed_train_file_path
+        self.transformed_test_file_path = transformed_test_file_path
+        self.preprocessed_object_file_path = preprocessed_object_file_path
+
+
+
     
     
         

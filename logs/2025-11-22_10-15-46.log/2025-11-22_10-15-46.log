@@ -1,0 +1,33 @@
+[2025-11-22 10:15:50,372] INFO - Training Pipeline Config Loaded
+[2025-11-22 10:15:50,429] INFO - Raw files loaded successfully
+[2025-11-22 10:15:50,473] INFO - Raw data saved to feature_store.csv successfully
+[2025-11-22 10:15:50,481] INFO - Data split into train and test sets successfully
+[2025-11-22 10:15:50,522] INFO - Ingested train and test file saved successfully
+[2025-11-22 10:15:50,522] INFO - DataIngestion Artifact Created
+[2025-11-22 10:15:50,541] INFO - Data Ingestion Completed
+[2025-11-22 10:15:50,603] INFO - Validating number of columns for training dataset
+[2025-11-22 10:15:50,604] INFO - Required number of columns: 80
+[2025-11-22 10:15:50,604] INFO - DataFrame has columns: 80
+[2025-11-22 10:15:50,604] INFO - Validating number of columns for training dataset
+[2025-11-22 10:15:50,605] INFO - Required number of columns: 80
+[2025-11-22 10:15:50,605] INFO - DataFrame has columns: 80
+[2025-11-22 10:15:50,605] INFO - Validating required columns for training dataset
+[2025-11-22 10:15:50,605] INFO - Validating required columns for training dataset
+[2025-11-22 10:15:50,808] INFO - Data drift detected between train and test datasets
+[2025-11-22 10:15:50,850] INFO - Data Validation Completed Successfully
+[2025-11-22 10:15:50,851] INFO - Data Validation Completed
+[2025-11-22 10:15:50,872] INFO - Starting data transformation process
+[2025-11-22 10:15:50,905] INFO - Train shape: (1168, 80), Test shape: (292, 80)
+[2025-11-22 10:15:50,908] INFO - Creating data transformation object (ColumnTransformer)
+[2025-11-22 10:15:50,908] INFO - Numerical columns: ['MSSubClass', 'LotFrontage', 'LotArea', 'OverallQual', 'OverallCond', 'YearBuilt', 'YearRemodAdd', 'MasVnrArea', 'BsmtFinSF1', 'BsmtFinSF2', 'BsmtUnfSF', 'TotalBsmtSF', '1stFlrSF', '2ndFlrSF', 'LowQualFinSF', 'GrLivArea', 'BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath', 'BedroomAbvGr', 'KitchenAbvGr', 'TotRmsAbvGrd', 'Fireplaces', 'GarageYrBlt', 'GarageCars', 'GarageArea', 'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch', 'PoolArea', 'MiscVal', 'MoSold', 'YrSold']
+[2025-11-22 10:15:50,909] INFO - Categorical columns: ['MSZoning', 'Street', 'Alley', 'LotShape', 'LandContour', 'Utilities', 'LotConfig', 'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 'ExterQual', 'ExterCond', 'Foundation', 'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2', 'Heating', 'HeatingQC', 'CentralAir', 'Electrical', 'KitchenQual', 'Functional', 'FireplaceQu', 'GarageType', 'GarageFinish', 'GarageQual', 'GarageCond', 'PavedDrive', 'PoolQC', 'Fence', 'MiscFeature', 'SaleType', 'SaleCondition']
+[2025-11-22 10:15:50,909] INFO - ColumnTransformer created successfully
+[2025-11-22 10:15:51,063] INFO - Transformed train shape: (1168, 301)
+[2025-11-22 10:15:51,064] INFO - Transformed test shape: (292, 301)
+[2025-11-22 10:15:51,066] INFO - Combined features and target into final arrays
+[2025-11-22 10:15:51,072] INFO - Entered the save_object method of MainUtils class
+[2025-11-22 10:15:51,075] INFO - Exited the save_object method of MainUtils class
+[2025-11-22 10:15:51,075] INFO - Entered the save_object method of MainUtils class
+[2025-11-22 10:15:51,079] INFO - Exited the save_object method of MainUtils class
+[2025-11-22 10:15:51,079] INFO - Saved transformed arrays and preprocessor object successfully
+[2025-11-22 10:15:51,081] INFO - Data Transformation Completed
