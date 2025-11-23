@@ -13,6 +13,18 @@ from sklearn.svm import SVR
 import sys
 import os
 import mlflow
+import pickle
+
+
+
+
+import dagshub
+dagshub.init(repo_owner='Alan6681', repo_name='HousePricePrediction', mlflow=True)
+
+# import mlflow
+# with mlflow.start_run():
+#   mlflow.log_param('parameter name', 'value')
+#   mlflow.log_metric('metric name', 1)
 
 class ModelTrainer:
     def __init__(self, model_trainer_config:ModelTrainerConfig, data_transformation_artifact:DataTransformationArtifact):
@@ -22,14 +34,24 @@ class ModelTrainer:
         except Exception as e:
             raise HousePricePredictionException(e,sys)
 
+    
+
     def track_mlflow(self, best_model, regressionmetric):
         with mlflow.start_run():
-            rmse_score = regressionmetric.rmse_score
-            r2_score = regressionmetric.r2_score
+            
+            # Log metrics
+            mlflow.log_metric("rmse_score", regressionmetric.rmse_score)
+            mlflow.log_metric("r2_score", regressionmetric.r2_score)
 
-            mlflow.log_metric("rmse_score", rmse_score)
-            mlflow.log_metric("r2_score", r2_score)
-            mlflow.sklearn.log_model(best_model, "model")
+            # Save model using pickle
+            os.makedirs("dagshub", exist_ok=True)
+            model_path = os.path.join("dagshub", "model.pkl")
+            with open(model_path, "wb") as f:
+                pickle.dump(best_model, f)
+
+            # Log the model as an artifact
+            mlflow.log_artifact(model_path)
+
 
 
     def train_model(self, X_train, y_train, X_test, y_test):

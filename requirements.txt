@@ -9,4 +9,8 @@ flask
 python-dotenv
 pyaml
 mlflow
+dagshub
+fastapi
+uvicorn
+python-multipart
 # -e .
