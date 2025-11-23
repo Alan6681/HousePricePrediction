@@ -25,7 +25,7 @@ class DataTransformationArtifact:
 @dataclass
 class RegressionMetricArtifact:
         r2_score: float
-        root_mean_squared_error: float
+        rmse_score: float
 
 @dataclass
 class ModelTrainerArtifact:

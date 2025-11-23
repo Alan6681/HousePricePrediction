@@ -12,7 +12,7 @@ def get_regression_metrics(y_true, y_preds) -> dict:
 
         regression_metric_artifact = RegressionMetricArtifact(
             r2_score=model_r2_score,
-            root_mean_squared_error=model_rmse_score
+            rmse_score=model_rmse_score
         )
 
         return regression_metric_artifact

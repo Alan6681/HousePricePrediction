@@ -12,6 +12,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 import sys
 import os
+import mlflow
 
 class ModelTrainer:
     def __init__(self, model_trainer_config:ModelTrainerConfig, data_transformation_artifact:DataTransformationArtifact):
@@ -21,11 +22,21 @@ class ModelTrainer:
         except Exception as e:
             raise HousePricePredictionException(e,sys)
 
+    def track_mlflow(self, best_model, regressionmetric):
+        with mlflow.start_run():
+            rmse_score = regressionmetric.rmse_score
+            r2_score = regressionmetric.r2_score
+
+            mlflow.log_metric("rmse_score", rmse_score)
+            mlflow.log_metric("r2_score", r2_score)
+            mlflow.sklearn.log_model(best_model, "model")
+
+
     def train_model(self, X_train, y_train, X_test, y_test):
         model = {
             "LinearRegression": LinearRegression(),
             "DecisionTreeRegressor": DecisionTreeRegressor(),
-            "RandomForestRegressor": RandomForestRegressor(),
+            "RandomForestRegressor": RandomForestRegressor(verbose=1),
             
             
         }
@@ -44,10 +55,10 @@ class ModelTrainer:
             },
             "RandomForestRegressor": {
                 "n_estimators": [100, 200, 300],
-                "max_depth": [None, 10, 20, 30],
+                "max_depth": [None, 20, 30],
                 "min_samples_split": [2, 5, 10],
                 "min_samples_leaf": [1, 2, 4],
-                "max_features": ["auto", "sqrt", None],
+                "max_features": ["auto", "sqrt"],
             }
         }
 
@@ -62,10 +73,16 @@ class ModelTrainer:
         y_train_pred = best_model.predict(X_train)
 
         regression_train_metric = get_regression_metrics(y_true=y_train, y_preds=y_train_pred)
-        logging.info(f"Best found model on both training and testing dataset is {best_model_name} with r2_score: {best_model_score}")
+        # logging.info(f"Best found model on both training and testing dataset is {best_model_name} with r2_score: {best_model_score}")
+
+        # Track the mlflow
+        self.track_mlflow(best_model, regression_train_metric)
 
         y_test_pred = best_model.predict(X_test)
         regression_test_metric = get_regression_metrics(y_true=y_test, y_preds=y_test_pred)
+
+        #Track mlflow
+        self.track_mlflow(best_model, regression_test_metric)
 
         preprocessor = load_object(self.data_transformation_artifact.preprocessed_object_file_path)
 
@@ -79,6 +96,7 @@ class ModelTrainer:
 
         is_model_accepted = best_model_score >= self.model_trainer_config.model_trainer_expected_r2_score
         print(f"The best model_score is: {best_model_score}")
+        print(f"The regression_test_metric is  {regression_test_metric} ")
 
 
         model_trainer_artifact = ModelTrainerArtifact(
@@ -108,6 +126,7 @@ class ModelTrainer:
                 )
             
             model_trainer_artifact = self.train_model(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
+
             return model_trainer_artifact
 
 
